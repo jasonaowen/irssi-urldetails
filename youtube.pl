@@ -26,11 +26,18 @@ sub message {
 }
 
 sub contains_youtube_link {
-  # example: http://www.youtube.com/watch?v=x-k0Ehx46YQ&feature=youtu.be
+  my ($message) = @_;
+  return (contains_youtube_fulllink($message) or contains_youtube_shortlink($message))
+}
+
+sub contains_youtube_fulllink {
   ($_) = @_;
-  if (/youtube\.com\/watch\?.+/ or /youtu\.be\/.+/) {
-    return 1;
-  }
+  return /youtube\.com\/watch\?.+/;
+}
+
+sub contains_youtube_shortlink {
+  ($_) = @_;
+  return /youtu\.be\/.+/;
 }
 
 sub get_video_link {
