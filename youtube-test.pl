@@ -4,16 +4,17 @@ use Test::SimpleUnit qw{:functions};
 Test::SimpleUnit::AutoskipFailedSetup( 1 );
 
 sub Irssi::signal_add { return 1; }
+require "youtube.pl";
 
-my $RequireWasOkay = 0;
-
+my $video_id = 'VjQMpBb1gps';
 my %links = (
-  'short link with protocol' => 'http://youtu.be/VjQMpBb1gps',
-  'short link without protocol' => 'youtu.be/VjQMpBb1gps',
-  'full link with protocol' => 'http://www.youtube.com/watch?v=VjQMpBb1gps',
-  'full link without protocol' => 'www.youtube.com/watch?v=VjQMpBb1gps',
-  'full link without www' => 'youtube.com/watch?v=VjQMpBb1gps',
-  'full link with feature parameter' => 'www.youtube.com/watch?v=VjQMpBb1gps',
+  "short link with protocol" => "http://youtu.be/$video_id",
+  "short link without protocol" => "youtu.be/$video_id",
+  "full link with protocol" => "http://www.youtube.com/watch?v=$video_id",
+  "full link without protocol" => "www.youtube.com/watch?v=$video_id",
+  "full link without www" => "youtube.com/watch?v=$video_id",
+  "full link with feature parameter" => "www.youtube.com/watch?v=$video_id&feature=youtu.be",
+  "full link with time parameter" => "http://www.youtube.com/watch?v=$video_id&t=17s",
 );
 
 sub generate_contains_test {
@@ -23,7 +24,7 @@ sub generate_contains_test {
     test => sub {
         assert contains_youtube_link($url), "Failed to detect link";
     },
-  },
+  };
 }
 
 sub generate_contains_tests {
@@ -36,50 +37,45 @@ sub generate_contains_tests {
   return @tests;
 }
 
-my @tests = (
-  # Require the module
-  {
-    name => 'require',
+sub generate_get_video_id_test {
+  my ($name, $url) = @_;
+  my $id = contains_youtube_link($url);
+  return {
+    name => "get_video_id parses $name",
     test => sub {
-      # Make sure we can load the module to be tested.
-      assertNoException { require "youtube.pl" };
-
-      # Set the flag to let the setup function know the module loaded okay
-      $RequireWasOkay = 1;
+        assertEquals(get_video_id($url), $video_id, "Failed to find video id");
     },
-  },
-  # Setup function (this will be run before any tests which follow)
-  #{
-  #  name => 'setup',
-  #  test => sub {
-      # If the previous test didn't finish, it's untestable, so just skip the
-      # rest of the tests
-  #    skipAll "Module failed to load" unless $RequireWasOkay;
-  #    $Instance = new MyClass;
-  #  },
-  #},
+  };
+}
 
-  # Teardown function (this will be run after any tests which follow)
-  #{
-  #  name => 'teardown',
-  #  test => sub {
-  #    undef $Instance;
-  #  },
-  #},
+sub generate_get_video_id_tests {
+  my (%links) = @_;
+  my @tests = ();
 
+  while (my($k, $v) = each %links) {
+    push(@tests, generate_get_video_id_test($k, $v));
+  }
+  return @tests;
+}
+
+my @tests = (
+  # contains_youtube_link
   generate_contains_tests(%links),
   {
     name => 'contains_youtube_link does not catch full link without video ID',
     test => sub {
-        assert !contains_youtube_link('http://www.youtube.com/'), "Improperly detected link";
+        assertNot contains_youtube_link('http://www.youtube.com/'), "Improperly detected link";
     },
   },
   {
     name => 'contains_youtube_link does not catch short link without video ID',
     test => sub {
-        assert !contains_youtube_link('http://youtu.be/'), "Improperly detected link";
+        assertNot contains_youtube_link('http://youtu.be/'), "Improperly detected link";
     },
   },
+
+  # get_video_id
+  generate_get_video_id_tests(%links),
 );
 runTests( @tests );
 
