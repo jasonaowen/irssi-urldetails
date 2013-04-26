@@ -27,16 +27,6 @@ sub generate_contains_test {
   };
 }
 
-sub generate_contains_tests {
-  my (%links) = @_;
-  my @tests = ();
-
-  while (my($k, $v) = each %links) {
-    push(@tests, generate_contains_test($k, $v));
-  }
-  return @tests;
-}
-
 sub generate_get_video_id_test {
   my ($name, $url) = @_;
   my $id = contains_youtube_link($url);
@@ -48,19 +38,20 @@ sub generate_get_video_id_test {
   };
 }
 
-sub generate_get_video_id_tests {
-  my (%links) = @_;
+sub generate_tests {
+  my ($generator) = @_;
   my @tests = ();
 
   while (my($k, $v) = each %links) {
-    push(@tests, generate_get_video_id_test($k, $v));
+    push(@tests, &$generator($k, $v));
   }
   return @tests;
 }
 
 my @tests = (
   # contains_youtube_link
-  generate_contains_tests(%links),
+  #generate_contains_tests(),
+  generate_tests(\&generate_contains_test),
   {
     name => 'contains_youtube_link does not catch full link without video ID',
     test => sub {
@@ -75,7 +66,7 @@ my @tests = (
   },
 
   # get_video_id
-  generate_get_video_id_tests(%links),
+  generate_tests(\&generate_get_video_id_test),
 );
 runTests( @tests );
 
