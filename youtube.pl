@@ -21,7 +21,7 @@ sub message {
 
   foreach my $word (split) {
     if (contains_youtube_link($word)) {
-      $server->print($target, youtube_details($word), MSGLEVEL_CRAP);
+      $server->print($target, youtube_details($word), MSGLEVEL_NOTICES);
     }
   }
 }
@@ -77,7 +77,7 @@ sub canonical_youtube_link {
 
 sub youtube_details {
   my ($word) = @_;
-  return canonical_youtube_link($word) . " Youtube link detected!";
+  return "-Youtube- " . canonical_youtube_link($word) . " Youtube link detected!";
 }
 
 Irssi::signal_add('message public', \&message);
