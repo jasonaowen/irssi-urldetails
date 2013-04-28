@@ -2,6 +2,7 @@ use strict;
 use vars qw($VERSION %IRSSI);
 
 use Irssi;
+
 $VERSION = '0.01';
 %IRSSI = (
   authors     => 'Jason Owen',
@@ -20,8 +21,7 @@ sub message {
 
   foreach my $word (split) {
     if (contains_youtube_link($word)) {
-      my $video_id = get_video_id($word);
-      $server->print($target, youtube_details($video_id), MSGLEVEL_CRAP);
+      $server->print($target, youtube_details($word), MSGLEVEL_CRAP);
     }
   }
 }
@@ -58,9 +58,26 @@ sub get_video_id_from_fulllink {
   return $1;
 }
 
+sub get_time {
+  my ($_) = @_;
+  /(t=[0-9smh]+)/;
+  return $1;
+}
+
+sub canonical_youtube_link {
+  my ($word) = @_;
+  my $video_id = get_video_id($word);
+  my $link = "https://youtu.be/$video_id";
+  my $time = get_time($word);
+  if ($time) {
+    $link .= "#$time";
+  }
+  return $link;
+}
+
 sub youtube_details {
-  my ($video_id) = @_;
-  return "https://youtu.be/$video_id Youtube link detected!";
+  my ($word) = @_;
+  return canonical_youtube_link($word) . " Youtube link detected!";
 }
 
 Irssi::signal_add('message public', \&message);
