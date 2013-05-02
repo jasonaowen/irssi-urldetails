@@ -5,12 +5,17 @@ use Test::More 'no_plan';
 sub Irssi::signal_add { return 1; }
 require "youtube.pl";
 
+my $video_id = 'VjQMpBb1gps';
+my $canonical_url = "https://youtu.be/$video_id";
+
 my %homepages = (
     "full link without video ID" => "http://www.youtube.com/",
     "short link without video ID" => "http://youtu.be/",
 );
-my $video_id = 'VjQMpBb1gps';
-my $canonical_url = "https://youtu.be/$video_id";
+my %embedded = (
+  "embedded full link" => "http://example.com/youtube.com/watch?v=$video_id",
+  "embedded short link" => "http://example.com/youtu.be/$video_id"
+);
 my %links = (
   "short link with protocol" => "http://youtu.be/$video_id",
   "short link without protocol" => "youtu.be/$video_id",
@@ -33,6 +38,9 @@ while(my ($name, $url) = each %all_links) {
   ok(contains_youtube_link($url), "contains_youtube_link failed to find $name");
 }
 while(my ($name, $url) = each %homepages) {
+  ok(!contains_youtube_link($url), "contains_youtube_link incorrectly found $name");
+}
+while(my ($name, $url) = each %embedded) {
   ok(!contains_youtube_link($url), "contains_youtube_link incorrectly found $name");
 }
 

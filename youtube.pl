@@ -25,13 +25,27 @@ sub message {
   my ($server, $_, $nick, $mask, $target) = @_;
   return unless $server;
 
-  #$server->print($target, "server: $server, data: $data, nick: $nick, mask: $mask, target: $target", MSGLEVEL_CRAP);
-
   foreach my $word (split) {
     if (contains_youtube_link($word)) {
       $server->print($target, youtube_details($word), MSGLEVEL_NOTICES);
     }
   }
+}
+
+sub send_text {
+  my ($_, $server, $window) = @_;
+  return unless $window;
+  my @words = ();
+
+  foreach my $word (split) {
+    if (contains_youtube_link($word)) {
+      $server->print($window->{name}, youtube_details($word), MSGLEVEL_NOTICES);
+      $word = canonical_youtube_link($word);
+    }
+    push(@words, $word);
+  }
+  my $line = join(" ", @words);
+  Irssi::signal_continue($line, $server, $window);
 }
 
 sub contains_youtube_link {
@@ -40,11 +54,11 @@ sub contains_youtube_link {
 }
 
 sub contains_youtube_fulllink {
-  return /youtube\.com\/watch\?.+/;
+  return /^(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?.+/;
 }
 
 sub contains_youtube_shortlink {
-  return /youtu\.be\/.+/;
+  return /^(?:https?:\/\/)?youtu\.be\/.+/;
 }
 
 sub get_video_id {
@@ -134,3 +148,4 @@ sub youtube_details {
 }
 
 Irssi::signal_add('message public', \&message);
+Irssi::signal_add('send text', \&send_text);
