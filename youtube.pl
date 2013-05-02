@@ -2,6 +2,9 @@ use strict;
 use vars qw($VERSION %IRSSI);
 
 use Irssi;
+use HTTP::Tiny;
+use Number::Format 'format_number';
+use XML::Simple;
 
 $VERSION = '0.01';
 %IRSSI = (
@@ -75,9 +78,54 @@ sub canonical_youtube_link {
   return $link;
 }
 
+sub get_youtube_api_url {
+  my ($video_id) = @_;
+  return "https://gdata.youtube.com/feeds/api/videos/$video_id?v=2";
+}
+
+sub youtube_xml_title {
+  my ($xml) = @_;
+  return $xml->{"title"};
+}
+
+sub youtube_xml_date {
+  my ($xml) = @_;
+  return substr($xml->{"published"}, 0, 10);
+}
+
+sub youtube_xml_views {
+  my ($xml) = @_;
+  return format_number($xml->{"yt:statistics"}->{"viewCount"});
+}
+
+sub youtube_api_parse {
+  my ($response) = @_;
+  if ($response->{success}) {
+    my $xml = XMLin($response->{content});
+    return (
+      youtube_xml_title($xml),
+      youtube_xml_date($xml),
+      youtube_xml_views($xml),
+    );
+  } else {
+    return join(" ", "API call failed:", $response->{status}, $response->{reason});
+  }
+}
+
+sub youtube_api_details {
+  my ($word) = @_;
+  my $video_id = get_video_id($word);
+  my $api_url = get_youtube_api_url($video_id);
+  my $response = HTTP::Tiny->new->get($api_url);
+  return youtube_api_parse($response);
+}
+
 sub youtube_details {
   my ($word) = @_;
-  return "-Youtube- " . canonical_youtube_link($word) . " Youtube link detected!";
+  return "-Youtube- " . join(" | ",
+    canonical_youtube_link($word),
+    youtube_api_details($word)
+  );
 }
 
 Irssi::signal_add('message public', \&message);
