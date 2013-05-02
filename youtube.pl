@@ -10,8 +10,8 @@ $VERSION = '0.01';
 %IRSSI = (
   authors     => 'Jason Owen',
   contact     => 'jason.a.owen@gmail.com',
-  name        => 'Youtube',
-  description => 'Print title of incoming youtube links ' .
+  name        => 'YouTube',
+  description => 'Print title of incoming YouTube links ' .
                  'and canonicalize outgoing links.' .
   license     => 'GPLv3',
 );
@@ -127,7 +127,7 @@ sub youtube_api_details {
 
 sub youtube_details {
   my ($word) = @_;
-  return "-Youtube- " . join(" | ",
+  return "-YouTube- " . join(" | ",
     canonical_youtube_link($word),
     youtube_api_details($word)
   );
