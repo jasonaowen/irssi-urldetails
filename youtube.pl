@@ -16,6 +16,11 @@ $VERSION = '0.01';
   license     => 'GPLv3',
 );
 
+my $tiny = HTTP::Tiny->new((
+  agent => "$IRSSI{name}/$VERSION",
+  timeout => 5,
+));
+
 sub message {
   my ($server, $_, $nick, $mask, $target) = @_;
   return unless $server;
@@ -116,7 +121,7 @@ sub youtube_api_details {
   my ($word) = @_;
   my $video_id = get_video_id($word);
   my $api_url = get_youtube_api_url($video_id);
-  my $response = HTTP::Tiny->new->get($api_url);
+  my $response = $tiny->get($api_url);
   return youtube_api_parse($response);
 }
 
