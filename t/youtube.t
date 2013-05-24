@@ -33,15 +33,15 @@ my %time_links = (
 );
 my %all_links = (%links, %time_links);
 
-# contains_youtube_link
+# contains_link
 while(my ($name, $url) = each %all_links) {
-  ok(UrlDetails::YouTube::contains_youtube_link($url), "contains_youtube_link finds $name");
+  ok(UrlDetails::YouTube::contains_link($url), "contains_youtube_link finds $name");
 }
 while(my ($name, $url) = each %homepages) {
-  ok(!UrlDetails::YouTube::contains_youtube_link($url), "contains_youtube_link does not find $name");
+  ok(!UrlDetails::YouTube::contains_link($url), "contains_youtube_link does not find $name");
 }
 while(my ($name, $url) = each %embedded) {
-  ok(!UrlDetails::YouTube::contains_youtube_link($url), "contains_youtube_link does not find $name");
+  ok(!UrlDetails::YouTube::contains_link($url), "contains_youtube_link does not find $name");
 }
 
 # get_video_id
@@ -57,10 +57,10 @@ while(my ($name, $url) = each %links) {
   ok(!UrlDetails::YouTube::get_time($url), "get_time does not find time in $name");
 }
 
-# canonical_youtube_link
+# canonical_link
 while(my ($name, $url) = each %links) {
-  is(UrlDetails::YouTube::canonical_youtube_link($url), $canonical_url, "canonical_youtube_link builds correct url for $name");
+  is(UrlDetails::YouTube::canonical_link($url), $canonical_url, "canonical_youtube_link builds correct url for $name");
 }
 while(my ($name, $url) = each %time_links) {
-  is(UrlDetails::YouTube::canonical_youtube_link($url), $canonical_time_url, "canonical_youtube_link builds correct url for $name");
+  is(UrlDetails::YouTube::canonical_link($url), $canonical_time_url, "canonical_youtube_link builds correct url for $name");
 }

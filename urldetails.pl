@@ -22,8 +22,8 @@ sub message {
   return unless $server;
 
   foreach my $word (split) {
-    if (UrlDetails::Youtube::contains_youtube_link($word)) {
-      $server->print($target, UrlDetails::Youtube::youtube_details($word), Irssi::MSGLEVEL_NOTICES);
+    if (UrlDetails::YouTube::contains_link($word)) {
+      $server->print($target, UrlDetails::YouTube::details($word), Irssi::MSGLEVEL_NOTICES);
     }
   }
 }
@@ -34,9 +34,9 @@ sub send_text {
   my @words = ();
 
   foreach my $word (split) {
-    if (UrlDetails::Youtube::contains_youtube_link($word)) {
-      $server->print($window->{name}, UrlDetails::Youtube::youtube_details($word), Irssi::MSGLEVEL_NOTICES);
-      $word = UrlDetails::Youtube::canonical_youtube_link($word);
+    if (UrlDetails::YouTube::contains_link($word)) {
+      $server->print($window->{name}, UrlDetails::YouTube::details($word), Irssi::MSGLEVEL_NOTICES);
+      $word = UrlDetails::YouTube::canonical_link($word);
     }
     push(@words, $word);
   }
@@ -54,22 +54,22 @@ my $tiny = HTTP::Tiny->new((
   timeout => 5,
 ));
 
-sub contains_youtube_link {
+sub contains_link {
   ($_) = @_;
-  return (contains_youtube_fulllink() or contains_youtube_shortlink())
+  return (contains_fulllink() or contains_shortlink())
 }
 
-sub contains_youtube_fulllink {
+sub contains_fulllink {
   return /^(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?.+/;
 }
 
-sub contains_youtube_shortlink {
+sub contains_shortlink {
   return /^(?:https?:\/\/)?youtu\.be\/.+/;
 }
 
 sub get_video_id {
   ($_) = @_;
-  if (contains_youtube_shortlink()) {
+  if (contains_shortlink()) {
     return get_video_id_from_shortlink();
   } else {
     return get_video_id_from_fulllink();
@@ -92,7 +92,7 @@ sub get_time {
   return $1;
 }
 
-sub canonical_youtube_link {
+sub canonical_link {
   my ($word) = @_;
   my $video_id = get_video_id($word);
   my $link = "https://youtu.be/$video_id";
@@ -103,52 +103,52 @@ sub canonical_youtube_link {
   return $link;
 }
 
-sub get_youtube_api_url {
+sub get_api_url {
   my ($video_id) = @_;
   return "https://gdata.youtube.com/feeds/api/videos/$video_id?v=2";
 }
 
-sub youtube_xml_title {
+sub xml_title {
   my ($xml) = @_;
   return $xml->{"title"};
 }
 
-sub youtube_xml_date {
+sub xml_date {
   my ($xml) = @_;
   return substr($xml->{"published"}, 0, 10);
 }
 
-sub youtube_xml_views {
+sub xml_views {
   my ($xml) = @_;
   return format_number($xml->{"yt:statistics"}->{"viewCount"});
 }
 
-sub youtube_api_parse {
+sub api_parse {
   my ($response) = @_;
   if ($response->{success}) {
     my $xml = XMLin($response->{content});
     return (
-      youtube_xml_title($xml),
-      youtube_xml_date($xml),
-      youtube_xml_views($xml),
+      xml_title($xml),
+      xml_date($xml),
+      xml_views($xml),
     );
   } else {
     return join(" ", "API call failed:", $response->{status}, $response->{reason});
   }
 }
 
-sub youtube_api_details {
+sub api_details {
   my ($word) = @_;
   my $video_id = get_video_id($word);
-  my $api_url = get_youtube_api_url($video_id);
+  my $api_url = get_api_url($video_id);
   my $response = $tiny->get($api_url);
-  return youtube_api_parse($response);
+  return api_parse($response);
 }
 
-sub youtube_details {
+sub details {
   my ($word) = @_;
   return "-YouTube- " . join(" | ",
-    canonical_youtube_link($word),
-    youtube_api_details($word)
+    canonical_link($word),
+    api_details($word)
   );
 }
