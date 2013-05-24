@@ -1,10 +1,13 @@
 #!/usr/bin/perl
 use strict;
 use Test::More 'no_plan';
+use Test::MockObject;
+use File::Slurp;
 
 sub Irssi::signal_add { return 1; }
 require "urldetails.pl";
 
+# data to use in tests
 my $video_id = 'VjQMpBb1gps';
 my $canonical_url = "https://youtu.be/$video_id";
 
@@ -32,35 +35,54 @@ my %time_links = (
   "full link with time anchor" => "http://www.youtube.com/watch?v=$video_id#$time",
 );
 my %all_links = (%links, %time_links);
+my $xml = read_file("t/$video_id.xml");
+my $details = "-YouTube- $canonical_url | Chewbacca Music Video (Clerks) | 2006-10-04 | 1,162,324";
+my $time_details = "-YouTube- $canonical_time_url | Chewbacca Music Video (Clerks) | 2006-10-04 | 1,162,324";
+
+# build object to test
+my $http_success = Test::MockObject->new();
+$http_success->mock('get', sub { return {
+  success => 1,
+  content => $xml,
+}; });
+my $youtube = UrlDetails::YouTube::new($http_success);
 
 # contains_link
 while(my ($name, $url) = each %all_links) {
-  ok(UrlDetails::YouTube::contains_link($url), "contains_youtube_link finds $name");
+  ok($youtube->contains_link($url), "contains_youtube_link finds $name");
 }
 while(my ($name, $url) = each %homepages) {
-  ok(!UrlDetails::YouTube::contains_link($url), "contains_youtube_link does not find $name");
+  ok(!$youtube->contains_link($url), "contains_youtube_link does not find $name");
 }
 while(my ($name, $url) = each %embedded) {
-  ok(!UrlDetails::YouTube::contains_link($url), "contains_youtube_link does not find $name");
+  ok(!$youtube->contains_link($url), "contains_youtube_link does not find $name");
 }
 
 # get_video_id
 while(my ($name, $url) = each %all_links) {
-  is(UrlDetails::YouTube::get_video_id($url), $video_id, "get_video_id finds video id in $name");
+  is($youtube->get_video_id($url), $video_id, "get_video_id finds video id in $name");
 }
 
 # get_time
 while(my ($name, $url) = each %time_links) {
-  is(UrlDetails::YouTube::get_time($url), $time, "get_time finds time in $name");
+  is($youtube->get_time($url), $time, "get_time finds time in $name");
 }
 while(my ($name, $url) = each %links) {
-  ok(!UrlDetails::YouTube::get_time($url), "get_time does not find time in $name");
+  ok(!$youtube->get_time($url), "get_time does not find time in $name");
 }
 
 # canonical_link
 while(my ($name, $url) = each %links) {
-  is(UrlDetails::YouTube::canonical_link($url), $canonical_url, "canonical_youtube_link builds correct url for $name");
+  is($youtube->canonical_link($url), $canonical_url, "canonical_youtube_link builds correct url for $name");
 }
 while(my ($name, $url) = each %time_links) {
-  is(UrlDetails::YouTube::canonical_link($url), $canonical_time_url, "canonical_youtube_link builds correct url for $name");
+  is($youtube->canonical_link($url), $canonical_time_url, "canonical_youtube_link builds correct url for $name");
+}
+
+# details
+while(my ($name, $url) = each %links) {
+  is($youtube->details($url), $details, "details for $name");
+}
+while(my ($name, $url) = each %time_links) {
+  is($youtube->details($url), $time_details, "details for $name");
 }
