@@ -2,9 +2,6 @@ use strict;
 use vars qw($VERSION %IRSSI);
 
 use Irssi;
-use HTTP::Tiny;
-use Number::Format 'format_number';
-use XML::Simple;
 
 $VERSION = '0.01';
 %IRSSI = (
@@ -16,18 +13,13 @@ $VERSION = '0.01';
   license     => 'GPLv3',
 );
 
-my $tiny = HTTP::Tiny->new((
-  agent => "$IRSSI{name}/$VERSION",
-  timeout => 5,
-));
-
 sub message {
   my ($server, $_, $nick, $mask, $target) = @_;
   return unless $server;
 
   foreach my $word (split) {
-    if (contains_youtube_link($word)) {
-      $server->print($target, youtube_details($word), MSGLEVEL_NOTICES);
+    if (UrlDetails::Youtube::contains_youtube_link($word)) {
+      $server->print($target, UrlDetails::Youtube::youtube_details($word), MSGLEVEL_NOTICES);
     }
   }
 }
@@ -38,15 +30,28 @@ sub send_text {
   my @words = ();
 
   foreach my $word (split) {
-    if (contains_youtube_link($word)) {
-      $server->print($window->{name}, youtube_details($word), MSGLEVEL_NOTICES);
-      $word = canonical_youtube_link($word);
+    if (UrlDetails::Youtube::contains_youtube_link($word)) {
+      $server->print($window->{name}, UrlDetails::Youtube::youtube_details($word), MSGLEVEL_NOTICES);
+      $word = UrlDetails::Youtube::canonical_youtube_link($word);
     }
     push(@words, $word);
   }
   my $line = join(" ", @words);
   Irssi::signal_continue($line, $server, $window);
 }
+
+Irssi::signal_add('message public', \&message);
+Irssi::signal_add('send text', \&send_text);
+
+package UrlDetails::Youtube;
+use HTTP::Tiny;
+use Number::Format 'format_number';
+use XML::Simple;
+
+my $tiny = HTTP::Tiny->new((
+  agent => "$main::IRSSI{name}/$main::VERSION",
+  timeout => 5,
+));
 
 sub contains_youtube_link {
   ($_) = @_;
@@ -146,6 +151,3 @@ sub youtube_details {
     youtube_api_details($word)
   );
 }
-
-Irssi::signal_add('message public', \&message);
-Irssi::signal_add('send text', \&send_text);
