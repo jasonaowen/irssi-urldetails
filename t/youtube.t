@@ -3,7 +3,7 @@ use strict;
 use Test::More 'no_plan';
 
 sub Irssi::signal_add { return 1; }
-require "youtube.pl";
+require "urldetails.pl";
 
 my $video_id = 'VjQMpBb1gps';
 my $canonical_url = "https://youtu.be/$video_id";
@@ -35,32 +35,32 @@ my %all_links = (%links, %time_links);
 
 # contains_youtube_link
 while(my ($name, $url) = each %all_links) {
-  ok(UrlDetails::Youtube::contains_youtube_link($url), "contains_youtube_link finds $name");
+  ok(UrlDetails::YouTube::contains_youtube_link($url), "contains_youtube_link finds $name");
 }
 while(my ($name, $url) = each %homepages) {
-  ok(!UrlDetails::Youtube::contains_youtube_link($url), "contains_youtube_link does not find $name");
+  ok(!UrlDetails::YouTube::contains_youtube_link($url), "contains_youtube_link does not find $name");
 }
 while(my ($name, $url) = each %embedded) {
-  ok(!UrlDetails::Youtube::contains_youtube_link($url), "contains_youtube_link does not find $name");
+  ok(!UrlDetails::YouTube::contains_youtube_link($url), "contains_youtube_link does not find $name");
 }
 
 # get_video_id
 while(my ($name, $url) = each %all_links) {
-  is(UrlDetails::Youtube::get_video_id($url), $video_id, "get_video_id finds video id in $name");
+  is(UrlDetails::YouTube::get_video_id($url), $video_id, "get_video_id finds video id in $name");
 }
 
 # get_time
 while(my ($name, $url) = each %time_links) {
-  is(UrlDetails::Youtube::get_time($url), $time, "get_time finds time in $name");
+  is(UrlDetails::YouTube::get_time($url), $time, "get_time finds time in $name");
 }
 while(my ($name, $url) = each %links) {
-  ok(!UrlDetails::Youtube::get_time($url), "get_time does not find time in $name");
+  ok(!UrlDetails::YouTube::get_time($url), "get_time does not find time in $name");
 }
 
 # canonical_youtube_link
 while(my ($name, $url) = each %links) {
-  is(UrlDetails::Youtube::canonical_youtube_link($url), $canonical_url, "canonical_youtube_link builds correct url for $name");
+  is(UrlDetails::YouTube::canonical_youtube_link($url), $canonical_url, "canonical_youtube_link builds correct url for $name");
 }
 while(my ($name, $url) = each %time_links) {
-  is(UrlDetails::Youtube::canonical_youtube_link($url), $canonical_time_url, "canonical_youtube_link builds correct url for $name");
+  is(UrlDetails::YouTube::canonical_youtube_link($url), $canonical_time_url, "canonical_youtube_link builds correct url for $name");
 }

@@ -7,19 +7,23 @@ $VERSION = '0.01';
 %IRSSI = (
   authors     => 'Jason Owen',
   contact     => 'jason.a.owen@gmail.com',
-  name        => 'YouTube',
-  description => 'Print title of incoming YouTube links ' .
-                 'and canonicalize outgoing links.' .
+  name        => 'URL Details',
+  description => 'Print details of recognized incoming links ' .
+                 'and canonicalize recognized outgoing links.' .
   license     => 'GPLv3',
 );
 
+Irssi::signal_add('message public', \&UrlDetails::message);
+Irssi::signal_add('send text', \&UrlDetails::send_text);
+
+package UrlDetails;
 sub message {
   my ($server, $_, $nick, $mask, $target) = @_;
   return unless $server;
 
   foreach my $word (split) {
     if (UrlDetails::Youtube::contains_youtube_link($word)) {
-      $server->print($target, UrlDetails::Youtube::youtube_details($word), MSGLEVEL_NOTICES);
+      $server->print($target, UrlDetails::Youtube::youtube_details($word), Irssi::MSGLEVEL_NOTICES);
     }
   }
 }
@@ -31,7 +35,7 @@ sub send_text {
 
   foreach my $word (split) {
     if (UrlDetails::Youtube::contains_youtube_link($word)) {
-      $server->print($window->{name}, UrlDetails::Youtube::youtube_details($word), MSGLEVEL_NOTICES);
+      $server->print($window->{name}, UrlDetails::Youtube::youtube_details($word), Irssi::MSGLEVEL_NOTICES);
       $word = UrlDetails::Youtube::canonical_youtube_link($word);
     }
     push(@words, $word);
@@ -40,10 +44,7 @@ sub send_text {
   Irssi::signal_continue($line, $server, $window);
 }
 
-Irssi::signal_add('message public', \&message);
-Irssi::signal_add('send text', \&send_text);
-
-package UrlDetails::Youtube;
+package UrlDetails::YouTube;
 use HTTP::Tiny;
 use Number::Format 'format_number';
 use XML::Simple;
