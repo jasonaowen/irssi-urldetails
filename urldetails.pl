@@ -2,6 +2,7 @@ use strict;
 use vars qw($VERSION %IRSSI);
 
 use Irssi;
+use HTTP::Tiny;
 
 $VERSION = '0.01';
 %IRSSI = (
@@ -13,14 +14,8 @@ $VERSION = '0.01';
   license     => 'GPLv3',
 );
 
-Irssi::signal_add('message public', \&UrlDetails::message);
-Irssi::signal_add('send text', \&UrlDetails::send_text);
-
-package UrlDetails;
-use HTTP::Tiny;
-
 my $tiny = HTTP::Tiny->new((
-  agent => "$main::IRSSI{name}/$main::VERSION",
+  agent => "$IRSSI{name}/$VERSION",
   timeout => 5,
 ));
 
@@ -30,35 +25,46 @@ my @url_types = (
   UrlDetails::YouTube::new($tiny),
 );
 
-sub message {
-  my ($server, $_, $nick, $mask, $target) = @_;
-  return unless $server;
+Irssi::signal_add('message public', UrlDetails::message(@url_types));
+Irssi::signal_add('send text', UrlDetails::send_text(@url_types));
 
-  foreach my $word (split) {
-    foreach my $url_type (@url_types) {
-      if ($url_type->contains_link($word)) {
-        $server->print($target, $url_type->details($word), Irssi::MSGLEVEL_NOTICES);
+package UrlDetails;
+
+sub message {
+  my @url_types = @_;
+  return sub {
+    my ($server, $_, $nick, $mask, $target) = @_;
+    return unless $server;
+
+    foreach my $word (split) {
+      foreach my $url_type (@url_types) {
+        if ($url_type->contains_link($word)) {
+          $server->print($target, $url_type->details($word), Irssi::MSGLEVEL_NOTICES);
+        }
       }
     }
   }
 }
 
 sub send_text {
-  my ($_, $server, $window) = @_;
-  return unless $window;
-  my @words = ();
+  my @url_types = @_;
+  return sub {
+    my ($_, $server, $window) = @_;
+    return unless $window;
+    my @words = ();
 
-  foreach my $word (split) {
-    foreach my $url_type (@url_types) {
-      if ($url_type->contains_link($word)) {
-        $server->print($window->{name}, $url_type->details($word), Irssi::MSGLEVEL_NOTICES);
-        $word = $url_type->canonical_link($word);
+    foreach my $word (split) {
+      foreach my $url_type (@url_types) {
+        if ($url_type->contains_link($word)) {
+          $server->print($window->{name}, $url_type->details($word), Irssi::MSGLEVEL_NOTICES);
+          $word = $url_type->canonical_link($word);
+        }
       }
+      push(@words, $word);
     }
-    push(@words, $word);
+    my $line = join(" ", @words);
+    Irssi::signal_continue($line, $server, $window);
   }
-  my $line = join(" ", @words);
-  Irssi::signal_continue($line, $server, $window);
 }
 
 package UrlDetails::YouTube;
