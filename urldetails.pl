@@ -25,8 +25,9 @@ my $tiny = HTTP::Tiny->new((
 ));
 
 my @url_types = (
-  UrlDetails::YouTube::new($tiny),
+  UrlDetails::isgd::new($tiny),
   UrlDetails::Vimeo::new($tiny),
+  UrlDetails::YouTube::new($tiny),
 );
 
 sub message {
@@ -229,7 +230,6 @@ sub api_parse {
   }
 }
 
-
 sub xml_title {
   my ($self, $xml) = @_;
   return $xml->{"video"}->{"title"};
@@ -243,4 +243,83 @@ sub xml_date {
 sub xml_views {
   my ($self, $xml) = @_;
   return format_number($xml->{"video"}->{"stats_number_of_plays"});
+}
+
+package UrlDetails::isgd;
+use XML::Simple;
+
+sub new {
+  my ($http) = @_;
+  return bless({http => $http});
+}
+
+sub contains_link {
+  (my $self, $_) = @_;
+  return (contains_isgd_link() or contains_vgd_link());
+}
+
+sub contains_isgd_link {
+  return /^(?:http:\/\/)?(?:www\.)?is\.gd\/.+/;
+}
+
+sub contains_vgd_link {
+  return /^(?:http:\/\/)?(?:www\.)?v\.gd\/.+/;
+}
+
+sub canonical_link {
+  my ($self, $url) = @_;
+  my $base_url = $self->get_base_url($url);
+  my $url_id = $self->get_url_id($url);
+  return "$base_url/$url_id";
+}
+
+sub get_base_url {
+  (my $self, $_) = @_;
+  if (contains_isgd_link()) {
+    return 'http://is.gd';
+  } else {
+    return 'http://v.gd';
+  }
+}
+
+sub get_url_id {
+  (my $self, $_) = @_;
+  /\.gd\/(.+)/;
+  return $1;
+}
+
+sub details {
+  my ($self, $url) = @_;
+  my $link = $self->canonical_link($url);
+  my $full_link = $self->api_details($url);
+  return "-is.gd- $link -> $full_link";
+}
+
+sub api_details {
+  my ($self, $url) = @_;
+  my $api_url = $self->get_api_url($url);
+  my $response = $self->{http}->get($api_url);
+  return $self->api_parse($response);
+}
+
+sub get_api_url {
+  my ($self, $url) = @_;
+  my $base_url = $self->get_base_url($url);
+  my $url_id = $self->get_url_id($url);
+  return "$base_url/forward.php?shorturl=$url_id&format=xml";
+}
+
+sub api_parse {
+  my ($self, $response) = @_;
+  if ($response->{success}) {
+    my $xml = XMLin($response->{content});
+    return $self->xml_full_url($xml);
+  } else {
+    return join(" ", "API call failed:", $response->{status}, $response->{reason});
+  }
+}
+
+sub xml_full_url {
+  my ($self, $xml) = @_;
+  return $xml->{"url"};
 }
