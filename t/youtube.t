@@ -49,13 +49,13 @@ my $youtube = UrlDetails::YouTube::new($http_success);
 
 # contains_link
 while(my ($name, $url) = each %all_links) {
-  ok($youtube->contains_link($url), "contains_youtube_link finds $name");
+  ok($youtube->contains_link($url), "contains_link finds $name");
 }
 while(my ($name, $url) = each %homepages) {
-  ok(!$youtube->contains_link($url), "contains_youtube_link does not find $name");
+  ok(!$youtube->contains_link($url), "contains_link does not find $name");
 }
 while(my ($name, $url) = each %embedded) {
-  ok(!$youtube->contains_link($url), "contains_youtube_link does not find $name");
+  ok(!$youtube->contains_link($url), "contains_link does not find $name");
 }
 
 # get_video_id
@@ -73,10 +73,10 @@ while(my ($name, $url) = each %links) {
 
 # canonical_link
 while(my ($name, $url) = each %links) {
-  is($youtube->canonical_link($url), $canonical_url, "canonical_youtube_link builds correct url for $name");
+  is($youtube->canonical_link($url), $canonical_url, "canonical_link builds correct url for $name");
 }
 while(my ($name, $url) = each %time_links) {
-  is($youtube->canonical_link($url), $canonical_time_url, "canonical_youtube_link builds correct url for $name");
+  is($youtube->canonical_link($url), $canonical_time_url, "canonical_link builds correct url for $name");
 }
 
 # details
