@@ -5,7 +5,9 @@ use Test::MockObject;
 use File::Slurp;
 use XML::Simple;
 
+sub Irssi::command_bind { return 1; }
 sub Irssi::signal_add { return 1; }
+sub Irssi::version { return 1; }
 require "urldetails.pl";
 
 # data to use in tests

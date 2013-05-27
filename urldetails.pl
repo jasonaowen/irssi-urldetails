@@ -14,8 +14,9 @@ $VERSION = '0.01';
   license     => 'GPLv3',
 );
 
+my $irssi_version = Irssi::version();
 my $tiny = HTTP::Tiny->new((
-  agent => "$IRSSI{name}/$VERSION",
+  agent => "Irssi/$irssi_version Plugin($IRSSI{name})/$VERSION",
   timeout => 5,
 ));
 

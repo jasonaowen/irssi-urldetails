@@ -8,12 +8,14 @@ use XML::Simple;
 use Data::Dumper;
 
 my $server;
-sub Irssi::signal_add { return 1; }
+sub Irssi::command_bind { return 1; }
 sub Irssi::MSGLEVEL_NOTICES { return 1; }
+sub Irssi::signal_add { return 1; }
 sub Irssi::signal_continue {
   my ($line, $server, $window) = @_;
   $server->signal_continue($line, $server, $window);
 }
+sub Irssi::version { return 1; }
 require "urldetails.pl";
 
 sub message_prints {
