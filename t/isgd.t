@@ -51,14 +51,14 @@ $isgd_http->mock('get', sub { return {
   success => 1,
   content => $isgd_xml,
 }; });
-my $isgd = UrlDetails::isgd::new($isgd_http);
+my $isgd = UrlDetails::isgd->new($isgd_http);
 
 my $vgd_http = Test::MockObject->new();
 $vgd_http->mock('get', sub { return {
   success => 1,
   content => $vgd_xml,
 }; });
-my $vgd = UrlDetails::isgd::new($vgd_http);
+my $vgd = UrlDetails::isgd->new($vgd_http);
 
 # contains_link
 while(my ($name, $url) = each %all_links) {

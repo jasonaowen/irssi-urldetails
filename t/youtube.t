@@ -45,7 +45,7 @@ $http_success->mock('get', sub { return {
   success => 1,
   content => $xml,
 }; });
-my $youtube = UrlDetails::YouTube::new($http_success);
+my $youtube = UrlDetails::YouTube->new($http_success);
 
 # contains_link
 while(my ($name, $url) = each %all_links) {

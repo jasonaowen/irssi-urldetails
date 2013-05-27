@@ -40,7 +40,7 @@ $http_success->mock('get', sub { return {
   success => 1,
   content => $xml,
 }; });
-my $vimeo = UrlDetails::Vimeo::new($http_success);
+my $vimeo = UrlDetails::Vimeo->new($http_success);
 
 # contains_link
 while(my ($name, $url) = each %links) {

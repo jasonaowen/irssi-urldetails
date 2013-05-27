@@ -20,9 +20,9 @@ my $tiny = HTTP::Tiny->new((
 ));
 
 my @url_types = (
-  UrlDetails::isgd::new($tiny),
-  UrlDetails::Vimeo::new($tiny),
-  UrlDetails::YouTube::new($tiny),
+  UrlDetails::isgd->new($tiny),
+  UrlDetails::Vimeo->new($tiny),
+  UrlDetails::YouTube->new($tiny),
 );
 
 Irssi::signal_add('message public', UrlDetails::message(@url_types));
@@ -67,14 +67,15 @@ sub send_text {
   }
 }
 
+sub new {
+  my ($class, $http) = @_;
+  return bless({http => $http}, $class);
+}
+
 package UrlDetails::YouTube;
+use base ("UrlDetails");
 use Number::Format 'format_number';
 use XML::Simple;
-
-sub new {
-  my ($http) = @_;
-  return bless({http => $http});
-}
 
 sub contains_link {
   (my $self, $_) = @_;
@@ -176,13 +177,9 @@ sub details {
 }
 
 package UrlDetails::Vimeo;
+use base ("UrlDetails");
 use Number::Format 'format_number';
 use XML::Simple;
-
-sub new {
-  my ($http) = @_;
-  return bless({http => $http});
-}
 
 sub contains_link {
   (my $self, $_) = @_;
@@ -252,12 +249,8 @@ sub xml_views {
 }
 
 package UrlDetails::isgd;
+use base ("UrlDetails");
 use XML::Simple;
-
-sub new {
-  my ($http) = @_;
-  return bless({http => $http});
-}
 
 sub contains_link {
   (my $self, $_) = @_;
