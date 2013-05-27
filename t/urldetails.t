@@ -8,7 +8,13 @@ use XML::Simple;
 use Data::Dumper;
 
 my $server;
+my $settings = {};
 sub Irssi::MSGLEVEL_NOTICES { return 1; }
+sub Irssi::settings_add_bool { return 1; }
+sub Irssi::settings_get_bool {
+  my ($setting) = @_;
+  return $settings->{$setting};
+}
 sub Irssi::signal_add { return 1; }
 sub Irssi::signal_continue {
   my ($line, $server, $window) = @_;
@@ -41,20 +47,10 @@ sub send_text_replaces {
 }
 
 sub url_detail_matcher {
-  my ($pattern, $replacement, $detail) = @_;
-  my $mock = Test::MockObject->new();
-  $mock->mock('contains_link', sub {
-    my ($self, $_) = @_;
-    return /$pattern/;
-  });
-  $mock->mock('details', sub {
-    return $detail;
-  });
-  $mock->mock('canonical_link', sub {
-    my ($self, $_) = @_;
-    return $replacement;
-  });
-  return $mock;
+  my ($pattern, $replacement, $detail, $should_canonicalize) = @_;
+  my $matcher = MockMatcher->new($pattern, $replacement, $detail);
+  $settings->{$matcher->canonicalize_setting_name()} = $should_canonicalize;
+  return $matcher;
 }
 
 # message
@@ -69,14 +65,51 @@ message_prints($message, "foo baz", "bar", "qux");
 
 # send_text
 my $send_text = UrlDetails::send_text(
-  url_detail_matcher("replaceself", "replaceself", "bar"),
-  url_detail_matcher("baz", "quux", "qux"),
+  url_detail_matcher("replaceself", "replaceself", "bar", 1),
+  url_detail_matcher("baz", "quux", "qux", 1),
 );
 send_text_replaces($send_text, "nomatch", "nomatch");
 send_text_replaces($send_text, "nomatch nomatch", "nomatch nomatch");
 send_text_replaces($send_text, "replaceself", "replaceself");
 send_text_replaces($send_text, "baz", "quux");
 send_text_replaces($send_text, "baz baz", "quux quux");
+
+$send_text = UrlDetails::send_text(
+  url_detail_matcher("baz", "quux", "qux", 0),
+);
+send_text_replaces($send_text, "baz", "baz");
+
+package MockMatcher;
+use base ("UrlDetails");
+
+sub new {
+  my ($class, $pattern, $replacement, $detail) = @_;
+  return bless({
+    pattern => $pattern,
+    replacement => $replacement,
+    detail => $detail,
+  });
+}
+
+sub contains_link {
+  my ($self, $_) = @_;
+  return /$self->{pattern}/;
+}
+
+sub details {
+  my ($self) = @_;
+  return $self->{detail};
+}
+
+sub canonical_link {
+  my ($self, $_) = @_;
+  return $self->{replacement};
+}
+
+sub canonicalize_setting_name {
+  my ($self) = @_;
+  return $self->{replacement};
+}
 
 package MockServer;
 

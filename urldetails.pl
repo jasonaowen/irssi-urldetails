@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Irssi;
+require Irssi;
 use HTTP::Tiny;
 
 our $VERSION = '0.01';
@@ -26,10 +26,16 @@ my @url_types = (
   UrlDetails::YouTube->new($tiny),
 );
 
+my $setting_group = "urldetails";
+foreach my $url_type (@url_types) {
+  Irssi::settings_add_bool($setting_group, $url_type->canonicalize_setting_name(), 1);
+}
+
 Irssi::signal_add('message public', UrlDetails::message(@url_types));
 Irssi::signal_add('send text', UrlDetails::send_text(@url_types));
 
 package UrlDetails;
+use Irssi;
 
 sub message {
   my @url_types = @_;
@@ -58,7 +64,7 @@ sub send_text {
       foreach my $url_type (@url_types) {
         if ($url_type->contains_link($word)) {
           $server->print($window->{name}, $url_type->details($word), Irssi::MSGLEVEL_NOTICES);
-          $word = $url_type->canonical_link($word);
+          $word = $url_type->canonicalize($word);
         }
       }
       push(@words, $word);
@@ -87,6 +93,20 @@ sub api_parse {
   } else {
     return join(" ", "API call failed:", $response->{status}, $response->{reason});
   }
+}
+
+sub canonicalize {
+  my ($self, $word) = @_;
+  if ($self->should_canonicalize()) {
+    return $self->canonical_link($word);
+  } else {
+    return $word;
+  }
+}
+
+sub should_canonicalize {
+  my ($self) = @_;
+  return Irssi::settings_get_bool($self->canonicalize_setting_name());
 }
 
 package UrlDetails::YouTube;
@@ -182,6 +202,10 @@ sub details {
   );
 }
 
+sub canonicalize_setting_name {
+  return "canonicalize_youtube"
+}
+
 package UrlDetails::Vimeo;
 use base ("UrlDetails");
 use Number::Format 'format_number';
@@ -241,6 +265,10 @@ sub xml_date {
 sub xml_views {
   my ($self, $xml) = @_;
   return format_number($xml->{"video"}->{"stats_number_of_plays"});
+}
+
+sub canonicalize_setting_name {
+  return "canonicalize_vimeo"
 }
 
 package UrlDetails::isgd;
@@ -305,4 +333,8 @@ sub api_parse_response {
 sub xml_full_url {
   my ($self, $xml) = @_;
   return $xml->{"url"};
+}
+
+sub canonicalize_setting_name {
+  return "canonicalize_isgd"
 }
