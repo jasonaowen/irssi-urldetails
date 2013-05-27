@@ -4,7 +4,6 @@ use Test::More 'no_plan';
 use Test::MockObject;
 use File::Slurp;
 
-sub Irssi::command_bind { return 1; }
 sub Irssi::signal_add { return 1; }
 sub Irssi::version { return 1; }
 require "urldetails.pl";

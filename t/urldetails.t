@@ -8,7 +8,6 @@ use XML::Simple;
 use Data::Dumper;
 
 my $server;
-sub Irssi::command_bind { return 1; }
 sub Irssi::MSGLEVEL_NOTICES { return 1; }
 sub Irssi::signal_add { return 1; }
 sub Irssi::signal_continue {
@@ -53,7 +52,7 @@ sub url_detail_matcher {
   });
   $mock->mock('canonical_link', sub {
     my ($self, $_) = @_;
-    return (/$pattern/)? $replacement : $_;
+    return $replacement;
   });
   return $mock;
 }
