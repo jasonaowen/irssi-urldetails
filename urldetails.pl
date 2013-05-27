@@ -72,6 +72,22 @@ sub new {
   return bless({http => $http}, $class);
 }
 
+sub api_details {
+  my ($self, $url) = @_;
+  my $api_url = $self->get_api_url($url);
+  my $response = $self->{http}->get($api_url);
+  return $self->api_parse($response);
+}
+
+sub api_parse {
+  my ($self, $response) = @_;
+  if ($response->{success}) {
+    return $self->api_parse_response($response->{content});
+  } else {
+    return join(" ", "API call failed:", $response->{status}, $response->{reason});
+  }
+}
+
 package UrlDetails::YouTube;
 use base ("UrlDetails");
 use Number::Format 'format_number';
@@ -127,7 +143,8 @@ sub canonical_link {
 }
 
 sub get_api_url {
-  my ($self, $video_id) = @_;
+  my ($self, $url) = @_;
+  my $video_id = $self->get_video_id($url);
   return "https://gdata.youtube.com/feeds/api/videos/$video_id?v=2";
 }
 
@@ -146,26 +163,14 @@ sub xml_views {
   return format_number($xml->{"yt:statistics"}->{"viewCount"});
 }
 
-sub api_parse {
-  my ($self, $response) = @_;
-  if ($response->{success}) {
-    my $xml = XMLin($response->{content});
-    return (
-      xml_title($xml),
-      xml_date($xml),
-      xml_views($xml),
-    );
-  } else {
-    return join(" ", "API call failed:", $response->{status}, $response->{reason});
-  }
-}
-
-sub api_details {
-  my ($self, $word) = @_;
-  my $video_id = $self->get_video_id($word);
-  my $api_url = $self->get_api_url($video_id);
-  my $response = $self->{http}->get($api_url);
-  return $self->api_parse($response);
+sub api_parse_response {
+  my ($self, $content) = @_;
+  my $xml = XMLin($content);
+  return (
+    xml_title($xml),
+    xml_date($xml),
+    xml_views($xml),
+  );
 }
 
 sub details {
@@ -206,31 +211,20 @@ sub details {
   );
 }
 
-sub api_details {
+sub get_api_url {
   my ($self, $url) = @_;
   my $video_id = $self->get_video_id($url);
-  my $api_url = $self->get_api_url($video_id);
-  my $response = $self->{http}->get($api_url);
-  return $self->api_parse($response);
-}
-
-sub get_api_url {
-  my ($self, $video_id) = @_;
   return "https://vimeo.com/api/v2/video/$video_id.xml";
 }
 
-sub api_parse {
-  my ($self, $response) = @_;
-  if ($response->{success}) {
-    my $xml = XMLin($response->{content});
-    return (
-      $self->xml_title($xml),
-      $self->xml_date($xml),
-      $self->xml_views($xml),
-    );
-  } else {
-    return join(" ", "API call failed:", $response->{status}, $response->{reason});
-  }
+sub api_parse_response {
+  my ($self, $content) = @_;
+  my $xml = XMLin($content);
+  return (
+    $self->xml_title($xml),
+    $self->xml_date($xml),
+    $self->xml_views($xml),
+  );
 }
 
 sub xml_title {
@@ -294,13 +288,6 @@ sub details {
   return "-is.gd- $link -> $full_link";
 }
 
-sub api_details {
-  my ($self, $url) = @_;
-  my $api_url = $self->get_api_url($url);
-  my $response = $self->{http}->get($api_url);
-  return $self->api_parse($response);
-}
-
 sub get_api_url {
   my ($self, $url) = @_;
   my $base_url = $self->get_base_url($url);
@@ -308,14 +295,10 @@ sub get_api_url {
   return "$base_url/forward.php?shorturl=$url_id&format=xml";
 }
 
-sub api_parse {
-  my ($self, $response) = @_;
-  if ($response->{success}) {
-    my $xml = XMLin($response->{content});
-    return $self->xml_full_url($xml);
-  } else {
-    return join(" ", "API call failed:", $response->{status}, $response->{reason});
-  }
+sub api_parse_response {
+  my ($self, $content) = @_;
+  my $xml = XMLin($content);
+  return $self->xml_full_url($xml);
 }
 
 sub xml_full_url {
