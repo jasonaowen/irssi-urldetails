@@ -1,16 +1,16 @@
 use strict;
-use vars qw($VERSION %IRSSI);
+use warnings;
 
 use Irssi;
 use HTTP::Tiny;
 
-$VERSION = '0.01';
-%IRSSI = (
+our $VERSION = '0.01';
+our %IRSSI = (
   authors     => 'Jason Owen',
   contact     => 'jason.a.owen@gmail.com',
   name        => 'URL Details',
   description => 'Print details of recognized incoming links ' .
-                 'and canonicalize recognized outgoing links.' .
+                 'and canonicalize recognized outgoing links.',
   license     => 'GPLv3',
 );
 
