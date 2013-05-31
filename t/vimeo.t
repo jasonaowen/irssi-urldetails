@@ -14,9 +14,10 @@ require "urldetails.pl";
 my $video_id = '65102146';
 my $video_title = '"Two Chips" / An Animated Short';
 my $canonical_url = "https://vimeo.com/$video_id";
+my $video_duration = '1m44s';
 my $video_date = '2013-04-29';
 my $video_views = '2,106,632';
-my $details = "-Vimeo- $canonical_url | $video_title | $video_date | $video_views";
+my $details = "-Vimeo- $canonical_url | $video_title | $video_duration | $video_date | $video_views";
 
 my %homepages = (
     "insecure link without video ID" => "http://www.vimeo.com/",
@@ -68,6 +69,7 @@ while(my ($name, $url) = each %links) {
 # xml parsing
 my $parsed_xml = XMLin($xml);
 is($vimeo->xml_title($parsed_xml), $video_title, "xml_title extracts correct title");
+is($vimeo->xml_time($parsed_xml), $video_duration, "xml_time extracts correct duration");
 is($vimeo->xml_date($parsed_xml), $video_date, "xml_date extracts correct date");
 is($vimeo->xml_views($parsed_xml), $video_views, "xml_views extract correct number of views");
 

@@ -37,6 +37,7 @@ Irssi::signal_add('send text', UrlDetails::send_text(@url_types));
 package UrlDetails;
 use Irssi;
 use Number::Format 'format_number';
+use Time::Duration;
 
 sub message {
   my @url_types = @_;
@@ -120,6 +121,11 @@ sub number {
   return format_number($n);
 }
 
+sub time {
+  my ($self, $seconds) = @_;
+  return concise(duration($seconds));
+}
+
 package UrlDetails::YouTube;
 use base ("UrlDetails");
 use XML::Simple;
@@ -184,6 +190,11 @@ sub xml_title {
   return $xml->{"title"};
 }
 
+sub xml_time {
+  my ($self, $xml) = @_;
+  return $self->time($xml->{"media:group"}->{"yt:duration"}->{"seconds"});
+}
+
 sub xml_date {
   my ($self, $xml) = @_;
   return $self->date($xml->{"published"});
@@ -199,6 +210,7 @@ sub api_parse_response {
   my $xml = XMLin($content);
   return (
     $self->xml_title($xml),
+    $self->xml_time($xml),
     $self->xml_date($xml),
     $self->xml_views($xml),
   );
@@ -256,6 +268,7 @@ sub api_parse_response {
   my $xml = XMLin($content);
   return (
     $self->xml_title($xml),
+    $self->xml_time($xml),
     $self->xml_date($xml),
     $self->xml_views($xml),
   );
@@ -264,6 +277,11 @@ sub api_parse_response {
 sub xml_title {
   my ($self, $xml) = @_;
   return $xml->{"video"}->{"title"};
+}
+
+sub xml_time {
+  my ($self, $xml) = @_;
+  return $self->time($xml->{"video"}->{"duration"});
 }
 
 sub xml_date {

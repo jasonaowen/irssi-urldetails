@@ -38,8 +38,8 @@ my %time_links = (
 );
 my %all_links = (%links, %time_links);
 my $xml = read_file("t/$video_id.xml");
-my $details = "-YouTube- $canonical_url | Chewbacca Music Video (Clerks) | 2006-10-04 | 1,162,324";
-my $time_details = "-YouTube- $canonical_time_url | Chewbacca Music Video (Clerks) | 2006-10-04 | 1,162,324";
+my $details = "-YouTube- $canonical_url | Chewbacca Music Video (Clerks) | 1m47s | 2006-10-04 | 1,162,324";
+my $time_details = "-YouTube- $canonical_time_url | Chewbacca Music Video (Clerks) | 1m47s | 2006-10-04 | 1,162,324";
 
 # build object to test
 my $http_success = Test::MockObject->new();
