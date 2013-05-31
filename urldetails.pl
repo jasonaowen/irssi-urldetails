@@ -36,6 +36,7 @@ Irssi::signal_add('send text', UrlDetails::send_text(@url_types));
 
 package UrlDetails;
 use Irssi;
+use Number::Format 'format_number';
 
 sub message {
   my @url_types = @_;
@@ -109,9 +110,18 @@ sub should_canonicalize {
   return Irssi::settings_get_bool($self->canonicalize_setting_name());
 }
 
+sub date {
+  my ($self, $d) = @_;
+  return substr($d, 0, 10);
+}
+
+sub number {
+  my ($self, $n) = @_;
+  return format_number($n);
+}
+
 package UrlDetails::YouTube;
 use base ("UrlDetails");
-use Number::Format 'format_number';
 use XML::Simple;
 
 sub contains_link {
@@ -170,27 +180,27 @@ sub get_api_url {
 }
 
 sub xml_title {
-  my ($xml) = @_;
+  my ($self, $xml) = @_;
   return $xml->{"title"};
 }
 
 sub xml_date {
-  my ($xml) = @_;
-  return substr($xml->{"published"}, 0, 10);
+  my ($self, $xml) = @_;
+  return $self->date($xml->{"published"});
 }
 
 sub xml_views {
-  my ($xml) = @_;
-  return format_number($xml->{"yt:statistics"}->{"viewCount"});
+  my ($self, $xml) = @_;
+  return $self->number($xml->{"yt:statistics"}->{"viewCount"});
 }
 
 sub api_parse_response {
   my ($self, $content) = @_;
   my $xml = XMLin($content);
   return (
-    xml_title($xml),
-    xml_date($xml),
-    xml_views($xml),
+    $self->xml_title($xml),
+    $self->xml_date($xml),
+    $self->xml_views($xml),
   );
 }
 
@@ -208,7 +218,6 @@ sub canonicalize_setting_name {
 
 package UrlDetails::Vimeo;
 use base ("UrlDetails");
-use Number::Format 'format_number';
 use XML::Simple;
 
 sub contains_link {
@@ -259,12 +268,12 @@ sub xml_title {
 
 sub xml_date {
   my ($self, $xml) = @_;
-  return substr($xml->{"video"}->{"upload_date"}, 0, 10);
+  return $self->date($xml->{"video"}->{"upload_date"});
 }
 
 sub xml_views {
   my ($self, $xml) = @_;
-  return format_number($xml->{"video"}->{"stats_number_of_plays"});
+  return $self->number($xml->{"video"}->{"stats_number_of_plays"});
 }
 
 sub canonicalize_setting_name {
