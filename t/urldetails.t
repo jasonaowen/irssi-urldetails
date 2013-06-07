@@ -5,7 +5,6 @@ use Test::More 'no_plan';
 use Test::MockObject;
 use File::Slurp;
 use XML::Simple;
-use Data::Dumper;
 
 my $server;
 my $settings = {};
