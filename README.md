@@ -5,6 +5,17 @@ Never be rickrolled again.
 
 An irssi script to show details of supported links. It can also clean up links you type as you send them, so that `www.youtube.com/watch?v=dQw4w9WgXcQ&feature=youtu.be` becomes `https://youtu.be/dQw4w9WgXcQ`.
 
+Preview
+-------
+
+    < strawman> can I see some samples of this plugin?
+    <@jasonaowen> sure! on the next line I'll post three links
+    -is.gd- http://is.gd/example -> http://www.example.com
+    -YouTube- https://youtu.be/dQw4w9WgXcQ | Rick Astley - Never Gonna Give You Up | 3m33s | 2009-10-25 | 64,091,243
+    -Vimeo- https://vimeo.com/2 | Good morning, universe | 29s | 2005-02-16 | 606,856
+    <@jasonaowen> is.gd/example www.youtube.com/watch?v=dQw4w9WgXcQ&feature=youtu.be http://vimeo.com/2
+    <@jasonaowen> note that they appear in the client before my message
+
 Requirements
 ------------
 
