@@ -53,7 +53,11 @@ foreach my $url_type (@url_types) {
 }
 
 Irssi::signal_add('message public', UrlDetails::message(@url_types));
+Irssi::signal_add('message irc action', UrlDetails::message(@url_types));
+Irssi::signal_add('message irc notice', UrlDetails::message(@url_types));
 Irssi::signal_add('send text', UrlDetails::send_text(@url_types));
+Irssi::signal_add('message irc own_action', UrlDetails::irc_own(@url_types));
+Irssi::signal_add('message irc own_notice', UrlDetails::irc_own(@url_types));
 
 package UrlDetails;
 use Irssi;
@@ -94,6 +98,27 @@ sub send_text {
     }
     my $line = join(" ", @words);
     Irssi::signal_continue($line, $server, $window);
+  }
+}
+
+sub irc_own {
+  my @url_types = @_;
+  return sub {
+    my ($server, $_, $target) = @_;
+    my @words = ();
+    print "target: $target";
+
+    foreach my $word (split) {
+      foreach my $url_type (@url_types) {
+        if ($url_type->contains_link($word)) {
+          $server->print($target, $url_type->details($word), Irssi::MSGLEVEL_NOTICES);
+          $word = $url_type->canonicalize($word);
+        }
+      }
+      push(@words, $word);
+    }
+    my $line = join(" ", @words);
+    Irssi::signal_continue($server, $line, $target);
   }
 }
 
