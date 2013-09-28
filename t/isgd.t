@@ -35,6 +35,10 @@ my $isgd_canonical_url = "http://is.gd/$isgd_url_id";
 my $isgd_details = "-is.gd- $isgd_canonical_url -> $isgd_url_full";
 my $isgd_xml = read_file('t/isgd.example.xml');
 
+my $isgd_error_url = $isgd_canonical_url . "\\";
+my $isgd_error_xml = read_file('t/isgd.error.xml');
+my $isgd_error_details = "-is.gd- $isgd_error_url -> Not found";
+
 my $vgd_url_id = 'example';
 my $vgd_url_full = 'http://example.com';
 my $vgd_canonical_url = "http://v.gd/$vgd_url_id";
@@ -113,3 +117,13 @@ while(my ($name, $url) = each %isgd_links) {
 while(my ($name, $url) = each %vgd_links) {
   is($vgd->details($url), $vgd_details, "details for $name");
 }
+
+# error handling
+$isgd_http = Test::MockObject->new();
+$isgd_http->mock('get', sub { return {
+  success => 1,
+  content => $isgd_error_xml,
+}; });
+$isgd = UrlDetails::isgd->new($isgd_http);
+my $isgd_error_xml = XMLin($isgd_error_xml);
+is($isgd->details($isgd_error_url), $isgd_error_details, "details for invalid url");

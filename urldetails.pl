@@ -371,7 +371,11 @@ sub get_api_url {
 sub api_parse_response {
   my ($self, $content) = @_;
   my $xml = XMLin($content);
-  return $self->xml_full_url($xml);
+  if ($xml->{url}) {
+    return $self->xml_full_url($xml);
+  } else {
+    return "Not found";
+  }
 }
 
 sub xml_full_url {
