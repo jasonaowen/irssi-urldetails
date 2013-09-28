@@ -45,7 +45,11 @@ my @url_types = (
 
 my $setting_group = "urldetails";
 foreach my $url_type (@url_types) {
-  Irssi::settings_add_bool($setting_group, $url_type->canonicalize_setting_name(), 1);
+  Irssi::settings_add_bool(
+    $setting_group,
+    $setting_group . "_" . $url_type->canonicalize_setting_name(),
+    1
+  );
 }
 
 Irssi::signal_add('message public', UrlDetails::message(@url_types));
@@ -125,7 +129,9 @@ sub canonicalize {
 
 sub should_canonicalize {
   my ($self) = @_;
-  return Irssi::settings_get_bool($self->canonicalize_setting_name());
+  return Irssi::settings_get_bool(
+    $setting_group . "_" . $self->canonicalize_setting_name()
+  );
 }
 
 sub date {

@@ -66,7 +66,7 @@ sub send_text_replaces {
 sub url_detail_matcher {
   my ($pattern, $replacement, $detail, $should_canonicalize) = @_;
   my $matcher = MockMatcher->new($pattern, $replacement, $detail);
-  $settings->{$matcher->canonicalize_setting_name()} = $should_canonicalize;
+  $settings->{'urldetails_' . $matcher->canonicalize_setting_name()} = $should_canonicalize;
   return $matcher;
 }
 
