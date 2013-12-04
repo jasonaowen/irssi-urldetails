@@ -106,7 +106,6 @@ sub irc_own {
   return sub {
     my ($server, $_, $target) = @_;
     my @words = ();
-    print "target: $target";
 
     foreach my $word (split) {
       foreach my $url_type (@url_types) {
