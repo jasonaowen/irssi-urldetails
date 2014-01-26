@@ -55,6 +55,7 @@ foreach my $url_type (@url_types) {
 Irssi::signal_add('message public', UrlDetails::message(@url_types));
 Irssi::signal_add('message irc action', UrlDetails::message(@url_types));
 Irssi::signal_add('message irc notice', UrlDetails::message(@url_types));
+Irssi::signal_add('message topic', UrlDetails::topic(@url_types));
 Irssi::signal_add('send text', UrlDetails::send_text(@url_types));
 Irssi::signal_add('message irc own_action', UrlDetails::irc_own(@url_types));
 Irssi::signal_add('message irc own_notice', UrlDetails::irc_own(@url_types));
@@ -74,6 +75,22 @@ sub message {
       foreach my $url_type (@url_types) {
         if ($url_type->contains_link($word)) {
           $server->print($target, $url_type->details($word), Irssi::MSGLEVEL_NOTICES);
+        }
+      }
+    }
+  }
+}
+
+sub topic {
+  my @url_types = @_;
+  return sub {
+    my ($server, $channel, $_, $nick, $address) = @_;
+    return unless $server;
+
+    foreach my $word (split) {
+      foreach my $url_type (@url_types) {
+        if ($url_type->contains_link($word)) {
+          $server->print($channel, $url_type->details($word), Irssi::MSGLEVEL_NOTICES);
         }
       }
     }

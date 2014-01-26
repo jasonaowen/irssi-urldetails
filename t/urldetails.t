@@ -53,6 +53,19 @@ sub message_prints {
   }
 }
 
+sub topic_prints {
+  my ($topic, $input, @expected) = @_;
+  $server = MockServer::new();
+
+  &$topic($server, '#channel', $input, "nickname", 'user@example.com');
+
+  is(scalar(@{$server->{messages}}), scalar(@expected), "prints correct number of messages");
+  my $i = 0;
+  foreach (@expected) {
+    is($server->{messages}[$i++]->{message}, $_, "prints correct message");
+  }
+}
+
 sub send_text_replaces {
   my ($send_text, $input, $expected) = @_;
   $server = MockServer::new();
@@ -79,6 +92,16 @@ message_prints($message, "nomatch");
 message_prints($message, "foo", "bar");
 message_prints($message, "baz", "qux");
 message_prints($message, "foo baz", "bar", "qux");
+
+# topic
+my $topic = UrlDetails::topic(
+  url_detail_matcher("foo", "foo", "bar"),
+  url_detail_matcher("baz", "baz", "qux"),
+);
+topic_prints($topic, "nomatch");
+topic_prints($topic, "foo", "bar");
+topic_prints($topic, "baz", "qux");
+topic_prints($topic, "foo baz", "bar", "qux");
 
 # send_text
 my $send_text = UrlDetails::send_text(
