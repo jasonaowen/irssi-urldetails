@@ -162,7 +162,7 @@ sub new {
 
 sub print {
   my ($self, $target, $message, $level) = @_;
-  push ($self->{messages}, {
+  push (@{$self->{messages}}, {
     target => $target,
     message => $message,
     level => $level,
@@ -171,5 +171,5 @@ sub print {
 
 sub signal_continue {
   my ($self, $line, $server, $window) = @_;
-  push ($self->{lines}, $line);
+  push (@{$self->{lines}}, $line);
 }
