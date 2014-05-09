@@ -26,7 +26,7 @@ use XML::Simple;
 sub Irssi::settings_add_bool { return 1; }
 sub Irssi::signal_add { return 1; }
 sub Irssi::version { return 1; }
-require "urldetails.pl";
+use UrlDetails;
 
 # data to use in tests
 my $isgd_url_id = 'example';
@@ -125,5 +125,5 @@ $isgd_http->mock('get', sub { return {
   content => $isgd_error_xml,
 }; });
 $isgd = UrlDetails::isgd->new($isgd_http);
-my $isgd_error_xml = XMLin($isgd_error_xml);
+#my $isgd_error_xml = XMLin($isgd_error_xml);
 is($isgd->details($isgd_error_url), $isgd_error_details, "details for invalid url");

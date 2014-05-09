@@ -26,7 +26,7 @@ use XML::Simple;
 sub Irssi::settings_add_bool { return 1; }
 sub Irssi::signal_add { return 1; }
 sub Irssi::version { return 1; }
-require "urldetails.pl";
+use UrlDetails;
 
 # data to use in tests
 my $video_id = '65102146';

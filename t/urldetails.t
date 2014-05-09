@@ -38,7 +38,7 @@ sub Irssi::signal_continue {
   $server->signal_continue($line, $server, $window);
 }
 sub Irssi::version { return 1; }
-require "urldetails.pl";
+use UrlDetails;
 
 sub message_prints {
   my ($message, $input, @expected) = @_;

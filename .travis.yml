@@ -3,7 +3,3 @@ perl:
   - "5.16"
   - "5.14"
   - "5.12"
-before_install:
-  - "sudo apt-get update"
-  - "sudo apt-get install -y libhttp-tiny-perl libnumber-format-perl libtime-duration-perl libxml-simple-perl libfile-slurp-perl libtest-mockobject-perl"
-script: "prove"
