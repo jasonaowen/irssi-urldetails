@@ -1,6 +1,8 @@
 irssi-urldetails
 ================
 
+[![Build Status](https://travis-ci.org/jasonaowen/irssi-urldetails.svg?branch=master)](https://travis-ci.org/jasonaowen/irssi-urldetails)
+
 Never be rickrolled again.
 
 An irssi script to show details of supported links. It can also clean up links you type as you send them, so that `www.youtube.com/watch?v=dQw4w9WgXcQ&feature=youtu.be` becomes `https://youtu.be/dQw4w9WgXcQ`.
