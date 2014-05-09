@@ -1,0 +1,7 @@
+language: perl
+perl:
+  - "5.16"
+  - "5.14"
+  - "5.12"
+install: "sudo apt-get install libhttp-tiny-perl libnumber-format-perl libtime-duration-perl libxml-simple-perl libfile-slurp-perl libtest-mockobject-perl"
+script: "prove"
